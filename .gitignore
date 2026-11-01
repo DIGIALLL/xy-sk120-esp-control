@@ -1,0 +1,11 @@
+# secrets and per-user data
+secrets.yaml
+api_key.txt
+app/config.json
+app/presets.json
+app/config.demo.json
+app/presets.demo.json
+app/logs/
+__pycache__/
+*.pyc
+.esphome/

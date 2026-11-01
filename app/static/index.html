@@ -1,0 +1,392 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>XY-SK120</title>
+<style>
+  :root{
+    --bg:#0e1318; --card:#161d25; --card2:#1f2933; --line:#2a3541; --text:#e8eef4; --muted:#8a97a5;
+    --accent:#4cc2ff; --green:#2fbf71; --amber:#f5a524; --red:#ef5350; --violet:#c792ea; --sel:#1e4a66;
+  }
+  @media (prefers-color-scheme: light){
+    :root:not([data-theme="dark"]){
+      --bg:#eef2f6; --card:#ffffff; --card2:#e8eef4; --line:#d3dce5; --text:#14202b; --muted:#5d6b79;
+      --accent:#0a7cc1; --green:#1b9a55; --amber:#c97a00; --red:#d63a37; --violet:#8a52b8; --sel:#cfe6f5;
+    }
+  }
+  :root[data-theme="light"]{
+    --bg:#eef2f6; --card:#ffffff; --card2:#e8eef4; --line:#d3dce5; --text:#14202b; --muted:#5d6b79;
+    --accent:#0a7cc1; --green:#1b9a55; --amber:#c97a00; --red:#d63a37; --violet:#8a52b8; --sel:#cfe6f5;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font:15px/1.4 "Segoe UI",system-ui,sans-serif}
+  .app{max-width:1320px;margin:0 auto;padding:16px;display:grid;gap:14px}
+  header{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+  header h1{margin:0;font-size:22px}
+  header .sub{color:var(--muted)}
+  header .right{margin-left:auto;display:flex;gap:18px;align-items:center;color:var(--muted);flex-wrap:wrap}
+  .dot{display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--red);margin-right:6px}
+  .dot.ok{background:var(--green)}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+  .cap{font-size:12px;font-weight:700;letter-spacing:.06em;color:var(--muted);text-transform:uppercase}
+  .reads{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  .read .row{display:flex;align-items:baseline;gap:8px;margin-top:4px}
+  .read .v{font-size:clamp(38px,6vw,64px);font-weight:700;font-variant-numeric:tabular-nums;color:var(--muted)}
+  .read .u{font-size:20px;color:var(--muted)}
+  .read.on .v{color:var(--text)}
+  .read.cc .v{color:var(--amber)}
+  .read .top{display:flex;justify-content:space-between}
+  .badge{font-size:12px;font-weight:700;color:var(--muted)}
+  .badge.cc{color:var(--amber)} .badge.cv{color:var(--green)}
+  .main{display:grid;grid-template-columns:minmax(0,400px) minmax(0,1fr);gap:14px;align-items:start}
+  .col{display:grid;gap:14px;min-width:0}
+  button{font:inherit;color:var(--text);background:var(--card2);border:0;border-radius:8px;padding:8px 12px;cursor:pointer}
+  button:hover:not(:disabled){filter:brightness(1.15)}
+  button:disabled{opacity:.45;cursor:not-allowed}
+  .out{width:100%;height:76px;font-size:20px;font-weight:700;border-radius:12px}
+  .out.on{background:var(--green);color:#fff}
+  .out small{display:block;font-size:12px;font-weight:400;opacity:.9}
+  .sp{margin-top:10px}
+  .sp label{display:block;color:var(--muted);font-size:13px;margin-bottom:4px}
+  .sp .ctl{display:flex;gap:5px}
+  .sp input{flex:1;min-width:0;width:0;text-align:center;font:700 22px "Segoe UI",sans-serif;background:var(--card2);color:var(--text);
+    border:1px solid var(--line);border-radius:8px;padding:6px;font-variant-numeric:tabular-nums}
+  .sp input:focus{outline:2px solid var(--accent);border-color:transparent}
+  .sp button{padding:6px 8px;font-size:13px;min-width:44px}
+  .presets{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+  .presets button{padding:10px 8px;text-align:center;font-weight:700;line-height:1.25}
+  .presets button small{display:block;font-weight:400;color:var(--muted)}
+  .link{background:none;color:var(--accent);padding:0;font-size:13px}
+  .head{display:flex;justify-content:space-between;align-items:center}
+  .tog{display:flex;align-items:center;gap:8px;margin-top:10px}
+  .tog input[type=number]{width:70px;background:var(--card2);color:var(--text);border:1px solid var(--line);border-radius:6px;padding:4px 6px;text-align:center}
+  .tog .grow{flex:1}
+  .seg{display:inline-flex;gap:4px}
+  .seg button.sel{background:var(--sel);color:var(--text);outline:1px solid var(--accent)}
+  .chartbar{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-bottom:8px}
+  .chartbar .stats{margin-left:auto;color:var(--muted);font-size:13px}
+  canvas{width:100%;height:440px;display:block}
+  footer{display:flex;gap:18px;color:var(--muted);flex-wrap:wrap;align-items:center}
+  #toasts{position:fixed;right:16px;bottom:16px;display:grid;gap:8px;z-index:9;max-width:min(420px,calc(100vw - 32px))}
+  .toast{padding:10px 14px;border-radius:10px;background:var(--card);border:1px solid var(--line);border-left:4px solid var(--accent);box-shadow:0 6px 24px #0006}
+  .toast.ok{border-left-color:var(--green)} .toast.warn{border-left-color:var(--amber)} .toast.err{border-left-color:var(--red)}
+  dialog{background:var(--card);color:var(--text);border:1px solid var(--line);border-radius:12px;padding:18px;max-width:calc(100vw - 32px)}
+  dialog::backdrop{background:#0008}
+  dialog .r{display:grid;grid-template-columns:1fr 90px 90px;gap:6px;margin-bottom:6px}
+  dialog input{background:var(--card2);color:var(--text);border:1px solid var(--line);border-radius:6px;padding:6px 8px;min-width:0}
+  .actions{display:flex;gap:8px;justify-content:flex-end;margin-top:12px}
+  .actions .pri{background:var(--green);color:#fff;font-weight:700}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start}
+  .field{display:grid;grid-template-columns:1fr 110px;gap:8px;align-items:center;margin-top:8px}
+  .field select,.field input{background:var(--card2);color:var(--text);border:1px solid var(--line);border-radius:6px;padding:6px 8px;min-width:0;font:inherit}
+  .field.wide{grid-template-columns:1fr}
+  .chg-btn{width:100%;margin-top:12px;font-weight:700;padding:12px}
+  .chg-btn.go{background:var(--green);color:#fff} .chg-btn.stop{background:var(--red);color:#fff}
+  .steps{display:flex;gap:4px;margin-top:12px}
+  .steps span{flex:1;text-align:center;font-size:12px;padding:5px 2px;border-radius:6px;background:var(--card2);color:var(--muted)}
+  .steps span.act{background:var(--sel);color:var(--text);outline:1px solid var(--accent)} .steps span.done{background:var(--green);color:#fff}
+  .chg-info{margin-top:8px;color:var(--muted);font-size:13px;min-height:2.6em}
+  .warn{color:var(--amber);font-size:12px;margin-top:8px}
+  @media (max-width:1180px){ .two{grid-template-columns:1fr} }
+  @media (max-width:980px){ .main{grid-template-columns:minmax(0,1fr)} .reads{grid-template-columns:1fr} canvas{height:300px} }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <h1>XY-SK120</h1><span class="sub">блок питания для ремонта</span>
+    <div class="right">
+      <span><span class="dot" id="dot"></span><span id="conn">подключение…</span></span>
+      <span id="uin">Uвх —</span><span id="temp">T —</span><button id="lang" class="link">EN</button>
+    </div>
+  </header>
+
+  <section class="reads">
+    <div class="card read" id="rU"><div class="cap">Напряжение</div><div class="row"><span class="v" id="vU">—</span><span class="u">В</span></div></div>
+    <div class="card read" id="rI"><div class="top"><span class="cap">Ток</span><span class="badge" id="mode"></span></div><div class="row"><span class="v" id="vI">—</span><span class="u">А</span></div></div>
+    <div class="card read" id="rP"><div class="cap">Мощность</div><div class="row"><span class="v" id="vP">—</span><span class="u">Вт</span></div></div>
+  </section>
+
+  <section class="main">
+    <div class="col">
+      <button class="out" id="out" disabled>ВКЛЮЧИТЬ ВЫХОД</button>
+
+      <div class="card">
+        <div class="cap">Уставки</div>
+        <div class="sp"><label>Напряжение, В</label>
+          <div class="ctl" id="cU"></div></div>
+        <div class="sp"><label>Лимит тока, А</label>
+          <div class="ctl" id="cI"></div></div>
+      </div>
+
+      <div class="card">
+        <div class="head"><span class="cap">Пресеты</span><button class="link" id="editP">править</button></div>
+        <div class="presets" id="presets"></div>
+      </div>
+    </div>
+
+    <div class="col">
+      <div class="card">
+        <div class="chartbar">
+          <div class="seg" id="sSeries"></div>
+          <div class="seg" id="sWin"></div>
+          <button id="clr" class="link">очистить</button>
+          <span class="stats" id="stats"></span>
+        </div>
+        <canvas id="cv"></canvas>
+      </div>
+      <div class="two">
+      <div class="card">
+        <div class="cap">Защиты (работают на сервере)</div>
+        <label class="tog"><input type="checkbox" id="tShort"><span>Выкл. при КЗ / перегрузке</span></label>
+        <label class="tog"><input type="checkbox" id="tExit"><span>Выкл. выход при закрытии окна</span></label>
+        <label class="tog"><input type="checkbox" id="tHw"><span>Подстраивать пороги модуля (OCP/OPP/OTP) под уставки</span></label>
+        <div class="warn" id="hwInfo" style="color:var(--muted)"></div>
+        <div class="tog"><span class="grow">Таймер работы, мин (0 — выкл)</span><input type="number" id="tTimer" min="0" max="600"></div>
+        <div class="tog"><span class="grow">Макс. температура, °C</span><input type="number" id="tTmax" min="40" max="95"></div>
+      </div>
+
+      <div class="card" id="chgCard">
+        <div class="cap">Зарядка АКБ</div>
+        <div class="field"><span>Тип</span><select id="cChem"></select></div>
+        <div class="field"><span>Банок последовательно (S)</span><input type="number" id="cCells" min="1" max="12" value="1"></div>
+        <div class="field"><span>Ток заряда, А</span><input type="number" id="cI" min="0.1" max="6" step="0.1" value="1"></div>
+        <div class="field"><span>Отсечка по току, А (пусто = авто)</span><input type="number" id="cCut" min="0.02" step="0.01" placeholder="авто"></div>
+        <div class="field"><span>Макс. время, мин</span><input type="number" id="cMax" min="5" max="1440" value="600"></div>
+        <div class="field wide"><span id="cTarget" class="cap" style="text-transform:none"></span></div>
+        <label class="tog"><input type="checkbox" id="cOk"><span>Тип, число банок и полярность проверены</span></label>
+        <div class="warn">Защиты от переполюсовки нет. Li-ion без BMS и балансира заряжать нельзя. NiMH не поддерживается.</div>
+        <button class="chg-btn go" id="cGo">Начать зарядку</button>
+        <div class="steps" id="cSteps"><span data-p="pre">Предзаряд</span><span data-p="cc">Ток (CC)</span><span data-p="cv">Добор (CV)</span><span data-p="done">Готово</span></div>
+        <div class="chg-info" id="cInfo"></div>
+      </div>
+      </div>
+    </div>
+  </section>
+
+  <footer><span id="fWh"></span><span id="fAh"></span><span id="fRun"></span><span id="fLog"></span><span id="fProt" style="color:var(--red)"></span></footer>
+</div>
+<div id="toasts"></div>
+
+<dialog id="dlg">
+  <div class="cap" style="margin-bottom:10px">Пресеты</div>
+  <div class="r cap"><span>Название</span><span>U, В</span><span>Лимит I, А</span></div>
+  <div id="rows"></div>
+  <div class="actions"><button id="add">+ добавить</button><button id="cancel">Отмена</button><button id="save" class="pri">Сохранить</button></div>
+</dialog>
+
+<script>
+const $ = s => document.querySelector(s);
+const SERIES = {i:{name:"Ток",unit:"А",idx:2,color:"--amber",floor:.5},u:{name:"Напряжение",unit:"В",idx:1,color:"--accent",floor:5},p:{name:"Мощность",unit:"Вт",idx:3,color:"--violet",floor:5}};
+let S = {}, conn = false, cfg = {}, presets = [], hist = [], series = "i", winMin = 1, limits = {u:36,i:6}, hoverX = null;
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+
+// ---------- язык / language ----------
+let lang = "ru";
+const EN_WEB = {"блок питания для ремонта": "bench power supply for repairs", "подключение…": "connecting…", "Uвх —": "Uin —", "Uвх": "Uin", "Напряжение": "Voltage", "В": "V", "Ток": "Current", "А": "A", "Мощность": "Power", "Вт": "W", "ВКЛЮЧИТЬ ВЫХОД": "SWITCH OUTPUT ON", "Уставки": "Setpoints", "Напряжение, В": "Voltage, V", "Лимит тока, А": "Current limit, A", "Пресеты": "Presets", "править": "edit", "Защиты (работают на сервере)": "Protections (run on the server)", "Выкл. при КЗ / перегрузке": "Switch off on short / overload", "Выкл. выход при закрытии окна": "Switch output off when window closes", "Подстраивать пороги модуля (OCP/OPP/OTP) под уставки": "Module thresholds (OCP/OPP/OTP) follow setpoints", "Таймер работы, мин (0 — выкл)": "Run timer, min (0 = off)", "Макс. температура, °C": "Max temperature, °C", "Зарядка АКБ": "Battery charging", "Тип": "Type", "Банок последовательно (S)": "Cells in series (S)", "Ток заряда, А": "Charge current, A", "Отсечка по току, А (пусто = авто)": "Cutoff current, A (empty = auto)", "Макс. время, мин": "Max time, min", "Тип, число банок и полярность проверены": "Type, cell count and polarity checked", "Защиты от переполюсовки нет. Li-ion без BMS и балансира заряжать нельзя. NiMH не поддерживается.": "No reverse-polarity protection. Never charge Li-ion without a BMS/balancer. NiMH is not supported.", "Начать зарядку": "Start charging", "Предзаряд": "Pre-charge", "Ток (CC)": "Current (CC)", "Добор (CV)": "Top-off (CV)", "Готово": "Done", "очистить": "clear", "Название": "Name", "U, В": "U, V", "Лимит I, А": "I limit, A", "+ добавить": "+ add", "Отмена": "Cancel", "Сохранить": "Save", "авто": "auto", "нет связи с сервером": "no link to server", "Новый": "New", "ESP подключена": "ESP connected", "нет связи с ESP": "no link to ESP", "выход выключен": "output off", "ограничение тока (CC)": "current limit (CC)", "стабилизация напряжения (CV)": "voltage regulation (CV)", "ВЫХОД ВКЛЮЧЁН": "OUTPUT ON", "нажмите, чтобы выключить": "click to switch off", "Втч": "Wh", "Ач": "Ah", "работает": "running", "лог: logs/": "log: logs/", "ЗАЩИТА МОДУЛЯ, код": "MODULE PROTECTION, code", "Пороги модуля сейчас": "Module thresholds now", "В/банка": "V/cell", "Цель": "Target", "предзаряд до": "pre-charge up to", "Подтвердите, что тип АКБ, число банок и полярность проверены": "Confirm that battery type, cell count and polarity are checked", "Остановить зарядку": "Stop charging", "1 мин": "1 min", "5 мин": "5 min", "10 мин": "10 min", "сейчас": "now", "мин": "min", "макс": "max", "средн.": "avg", "нет данных": "no data", "цель": "target", "отсечка": "cutoff"};
+const tt = s => lang === "en" ? (EN_WEB[s] ?? s) : s;
+function applyLang(){
+  document.documentElement.lang = lang;
+  const w = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT); let n;
+  while ((n = w.nextNode())){
+    if (/^(SCRIPT|STYLE)$/.test(n.parentNode.nodeName)) continue;
+    if (n.__ru === undefined) n.__ru = /[А-Яа-яЁё]/.test(n.nodeValue) ? n.nodeValue : null;
+    if (n.__ru != null){ const lead = n.__ru.match(/^\s*/)[0], trail = n.__ru.match(/\s*$/)[0]; n.nodeValue = lead + tt(n.__ru.trim()) + trail; }
+  }
+  $("#cCut").placeholder = tt("авто"); $("#lang").textContent = lang === "ru" ? "EN" : "RU";
+}
+function buildSegs(){
+  seg("#sSeries", [["i",tt("Ток")],["u",tt("Напряжение")],["p",tt("Мощность")]], () => series, v => series = v);
+  seg("#sWin", [[1,tt("1 мин")],[5,tt("5 мин")],[10,tt("10 мин")]], () => winMin, v => winMin = v);
+}
+
+// ---------- WebSocket ----------
+let ws;
+function connect(){
+  ws = new WebSocket(`ws://${location.host}/ws`);
+  ws.onopen = () => {};
+  ws.onclose = () => { conn = false; $("#dot").className = "dot"; $("#conn").textContent = tt("нет связи с сервером"); $("#out").disabled = true; setTimeout(connect, 2000); };
+  ws.onmessage = e => handle(JSON.parse(e.data));
+}
+const send = o => ws && ws.readyState === 1 && ws.send(JSON.stringify(o));
+
+function handle(m){
+  if (m.type === "init"){ cfg = m.cfg; presets = m.presets; hist = m.history; limits = m.limits; chems = m.chems || {}; chg = m.charge; lang = cfg.lang || "ru"; initChems(); renderPresets(); applyCfg(); renderCharge(); buildSegs(); applyLang(); }
+  else if (m.type === "state"){ conn = m.conn; S = m.s; chg = m.charge; if (m.sample){ hist.push(m.sample); if (hist.length > 2400) hist.shift(); } renderState(m); }
+  else if (m.type === "presets"){ presets = m.presets; renderPresets(); }
+  else if (m.type === "cfg"){ cfg = m.cfg; if (m.presets) presets = m.presets; if (m.chems) chems = m.chems; applyCfg();
+    if (cfg.lang && cfg.lang !== lang){ lang = cfg.lang; initChems(); renderPresets(); buildSegs(); applyLang(); } }
+  else if (m.type === "history"){ hist = m.history; }
+  else if (m.type === "toast"){ toast(m.msg, m.level); }
+}
+
+// ---------- уставки ----------
+function setpoint(host, key, steps, fmt){
+  const root = $(host);
+  const mk = (t, d) => { const b = document.createElement("button"); b.textContent = t; b.onclick = () => nudge(key, d); return b; };
+  steps.neg.forEach(([t,d]) => root.append(mk(t,d)));
+  const inp = document.createElement("input"); inp.inputMode = "decimal"; inp.id = "in_" + key; root.append(inp);
+  steps.pos.forEach(([t,d]) => root.append(mk(t,d)));
+  const apply = () => { const v = parseFloat(inp.value.replace(",", ".")); const cur = S[key === "u" ? "set_u" : "set_i"];
+    if (isNaN(v)) { fillInputs(true); return; } if (cur == null || Math.abs(v - cur) > 1e-6) send({cmd:"set", [key]: v}); inp.blur(); };
+  inp.addEventListener("keydown", e => { if (e.key === "Enter") apply(); });
+  inp.addEventListener("change", apply);
+}
+function nudge(key, d){
+  const cur = S[key === "u" ? "set_u" : "set_i"]; if (cur == null) return;
+  const lim = key === "u" ? limits.u : limits.i, min = key === "u" ? 0 : .01;
+  send({cmd:"set", [key]: Math.max(min, Math.min(lim, +(cur + d).toFixed(3)))});
+}
+setpoint("#cU", "u", {neg:[["−1",-1],["−0.1",-.1]], pos:[["+0.1",.1],["+1",1]]});
+setpoint("#cI", "i", {neg:[["−0.1",-.1],["−0.01",-.01]], pos:[["+0.01",.01],["+0.1",.1]]});
+function fillInputs(force){
+  for (const [k, f, n] of [["u","set_u",2],["i","set_i",3]]){
+    const el = $("#in_" + k); if (S[f] == null) continue;
+    if (force || document.activeElement !== el) el.value = S[f].toFixed(n);
+  }
+}
+
+// ---------- пресеты ----------
+function renderPresets(){
+  const box = $("#presets"); box.innerHTML = "";
+  presets.forEach((p, i) => { const b = document.createElement("button");
+    b.innerHTML = `${(+p.u).toString()} ${tt("В")} · ${(+p.i).toString()} ${tt("А")}<small>${p.name.replace(/</g,"&lt;")}</small>`;
+    b.onclick = () => send({cmd:"preset", index:i}); box.append(b); });
+}
+$("#editP").onclick = () => { const rows = $("#rows"); rows.innerHTML = ""; presets.forEach(p => addRow(p.name, p.u, p.i)); $("#dlg").showModal(); };
+function addRow(n=tt("Новый"), u=5, i=1){ const r = document.createElement("div"); r.className = "r";
+  r.innerHTML = `<input value="${String(n).replace(/"/g,"&quot;")}"><input value="${u}" inputmode="decimal"><input value="${i}" inputmode="decimal">`; $("#rows").append(r); }
+$("#add").onclick = () => { if ($("#rows").children.length < 8) addRow(); };
+$("#cancel").onclick = () => $("#dlg").close();
+$("#save").onclick = () => {
+  const out = [...$("#rows").children].map(r => { const [a,b,c] = r.querySelectorAll("input");
+    return {name:a.value.trim(), u:parseFloat(b.value.replace(",",".")), i:parseFloat(c.value.replace(",","."))}; })
+    .filter(p => p.name && !isNaN(p.u) && !isNaN(p.i));
+  if (out.length) send({cmd:"save_presets", presets:out}); $("#dlg").close();
+};
+
+// ---------- защиты ----------
+function applyCfg(){
+  $("#tShort").checked = !!cfg.short_off; $("#tExit").checked = !!cfg.off_on_exit; $("#tHw").checked = !!cfg.smart_hw;
+  if (document.activeElement !== $("#tTimer")) $("#tTimer").value = cfg.timer_min ?? 0;
+  if (document.activeElement !== $("#tTmax")) $("#tTmax").value = cfg.tmax ?? 75;
+}
+$("#tShort").onchange = e => send({cmd:"config", short_off:e.target.checked});
+$("#tExit").onchange = e => send({cmd:"config", off_on_exit:e.target.checked});
+$("#tHw").onchange = e => send({cmd:"config", smart_hw:e.target.checked});
+$("#tTimer").onchange = e => send({cmd:"config", timer_min:+e.target.value});
+$("#tTmax").onchange = e => send({cmd:"config", tmax:+e.target.value});
+
+// ---------- состояние ----------
+const fmt = (v, n) => v == null ? "—" : v.toFixed(n);
+function renderState(m){
+  const on = !!S.out, cc = !!S.cc && on;
+  $("#dot").className = "dot" + (conn ? " ok" : ""); $("#conn").textContent = conn ? tt("ESP подключена") : tt("нет связи с ESP");
+  $("#uin").textContent = tt("Uвх") + " " + fmt(S.uin, 2) + " " + tt("В"); $("#temp").textContent = "T " + fmt(S.temp, 1) + " °C";
+  $("#vU").textContent = fmt(S.uout, 2); $("#vI").textContent = fmt(S.iout, 3); $("#vP").textContent = fmt(S.pout, 1);
+  for (const id of ["rU","rP"]) $("#" + id).className = "card read" + (on ? " on" : "");
+  $("#rI").className = "card read" + (cc ? " cc" : on ? " on" : "");
+  const mode = $("#mode"); mode.textContent = !on ? tt("выход выключен") : cc ? tt("ограничение тока (CC)") : tt("стабилизация напряжения (CV)");
+  mode.className = "badge" + (!on ? "" : cc ? " cc" : " cv");
+  const b = $("#out"); b.disabled = !conn; b.className = "out" + (on ? " on" : "");
+  b.innerHTML = on ? tt("ВЫХОД ВКЛЮЧЁН") + "<small>" + tt("нажмите, чтобы выключить") + "</small>" : tt("ВКЛЮЧИТЬ ВЫХОД");
+  fillInputs(false);
+  $("#fWh").textContent = S.wh != null ? S.wh.toFixed(3) + " " + tt("Втч") : ""; $("#fAh").textContent = S.ah != null ? S.ah.toFixed(3) + " " + tt("Ач") : "";
+  $("#fRun").textContent = on && m.out_for ? tt("работает") + " " + String(Math.floor(m.out_for/60)).padStart(2,"0") + ":" + String(Math.floor(m.out_for%60)).padStart(2,"0") : "";
+  $("#fLog").textContent = m.log ? tt("лог: logs/") + m.log : "";
+  $("#fProt").textContent = S.prot ? tt("ЗАЩИТА МОДУЛЯ, код") + " " + Math.round(S.prot) : "";
+  renderCharge();
+  $("#hwInfo").textContent = S.hw_ocp != null ? `${tt("Пороги модуля сейчас")}: OCP ${S.hw_ocp.toFixed(2)} ${tt("А")} · OPP ${S.hw_opp.toFixed(0)} ${tt("Вт")} · OTP ${Math.round(S.hw_otp)} °C` : "";
+  draw();
+}
+$("#lang").onclick = () => send({cmd:"config", lang: lang === "ru" ? "en" : "ru"});
+$("#out").onclick = () => send({cmd:"out", on: !S.out});
+document.addEventListener("keydown", e => { if (e.code === "Space" && !/INPUT|TEXTAREA|BUTTON/.test(document.activeElement.tagName)) { e.preventDefault(); $("#out").click(); }
+  if (e.key === "Escape") send({cmd:"out", on:false}); });
+$("#clr").onclick = () => send({cmd:"clear_history"});
+
+
+// ---------- зарядка ----------
+let chems = {}, chg = null;
+function initChems(){ const sel = $("#cChem"); sel.innerHTML = ""; for (const [k,v] of Object.entries(chems)){ const o = document.createElement("option"); o.value = k; o.textContent = `${v.name} (${v.v} ${tt("В/банка")})`; sel.append(o); } updTarget(); }
+function updTarget(){ const c = chems[$("#cChem").value]; if (!c) return; const n = +$("#cCells").value || 1; $("#cTarget").textContent = `${tt("Цель")}: ${(c.v*n).toFixed(2)} ${tt("В")} (${tt("предзаряд до")} ${(c.pre*n).toFixed(2)} ${tt("В")})`; }
+["#cChem","#cCells"].forEach(id => $(id).addEventListener("input", updTarget));
+$("#cGo").onclick = () => {
+  if (chg && chg.active) { send({cmd:"charge_stop"}); return; }
+  if (!$("#cOk").checked) { toast(tt("Подтвердите, что тип АКБ, число банок и полярность проверены"), "warn"); return; }
+  send({cmd:"charge_start", chem:$("#cChem").value, cells:+$("#cCells").value, i:+$("#cI").value,
+        cutoff:$("#cCut").value ? +$("#cCut").value : null, max_min:+$("#cMax").value, confirm:true});
+};
+function renderCharge(){
+  const act = chg && chg.active, order = ["pre","cc","cv","done"], cur = chg ? order.indexOf(chg.phase) : -1;
+  const b = $("#cGo"); b.textContent = act ? tt("Остановить зарядку") : tt("Начать зарядку"); b.className = "chg-btn " + (act ? "stop" : "go"); b.disabled = !conn;
+  document.querySelectorAll("#cSteps span").forEach((sp, i) => sp.className = !chg ? "" : (chg.phase === "done" || i < cur) ? "done" : (act && i === cur) ? "act" : "");
+  if (!chg){ $("#cInfo").textContent = ""; return; }
+  const e = Math.floor(chg.elapsed), t = String(Math.floor(e/60)).padStart(2,"0") + ":" + String(e%60).padStart(2,"0");
+  $("#cInfo").textContent = `${chg.msg}
+${t} · ${chg.ah.toFixed(3)} ${tt("Ач")} · ${chg.wh.toFixed(2)} ${tt("Втч")} · ${tt("цель")} ${chg.target} ${tt("В")}, ${chg.i} ${tt("А")}, ${tt("отсечка")} ${chg.cutoff} ${tt("А")}`;
+  $("#cInfo").style.whiteSpace = "pre-line";
+  for (const id of ["#cChem","#cCells","#cI","#cCut","#cMax"]) $(id).disabled = !!act;
+}
+
+// ---------- переключатели графика ----------
+function seg(host, items, get, set){
+  const root = $(host); root.innerHTML = "";
+  items.forEach(([val, label]) => { const b = document.createElement("button"); b.textContent = label;
+    b.className = get() === val ? "sel" : ""; b.onclick = () => { set(val); seg(host, items, get, set); draw(); }; root.append(b); });
+}
+
+// ---------- график ----------
+const cv = $("#cv"), ctx = cv.getContext("2d");
+function nice(x){ if (x <= 0) return 4; const e = Math.floor(Math.log10(x/4));
+  for (const k of [e, e+1]) for (const m of [1,2,2.5,5]) if (4*m*10**k >= x) return 4*m*10**k; return 4*10**(e+2); }
+function draw(){
+  const dpr = devicePixelRatio || 1, W = cv.clientWidth, H = cv.clientHeight;
+  if (cv.width !== Math.round(W*dpr) || cv.height !== Math.round(H*dpr)){ cv.width = Math.round(W*dpr); cv.height = Math.round(H*dpr); }
+  ctx.setTransform(dpr,0,0,dpr,0,0); ctx.clearRect(0,0,W,H);
+  const sr = SERIES[series], col = css(sr.color), muted = css("--muted"), line = css("--line");
+  const pl = 54, pr = 14, pt = 14, pb = 28, pw = W-pl-pr, ph = H-pt-pb, win = winMin*60, now = Date.now()/1000;
+  const pts = hist.filter(p => p[0] >= now - win), vals = pts.map(p => p[sr.idx]);
+  const top = nice(Math.max(vals.length ? Math.max(...vals)*1.15 : 0, sr.floor));
+  ctx.font = "12px Segoe UI, sans-serif"; ctx.textBaseline = "middle";
+  for (let k = 0; k <= 4; k++){ const y = pt + ph*k/4; ctx.strokeStyle = line; ctx.beginPath(); ctx.moveTo(pl,y); ctx.lineTo(pl+pw,y); ctx.stroke();
+    const v = top*(1-k/4); ctx.fillStyle = muted; ctx.textAlign = "right"; ctx.fillText(v.toFixed(top >= 10 ? 0 : top >= 2 ? 1 : 2), pl-8, y); }
+  ctx.textBaseline = "top";
+  for (let k = 0; k <= 4; k++){ const x = pl + pw*k/4, sec = Math.round(win*(1-k/4)); ctx.fillStyle = muted;
+    ctx.textAlign = k === 0 ? "left" : k === 4 ? "right" : "center";
+    ctx.fillText(sec === 0 ? tt("сейчас") : "−" + Math.floor(sec/60) + ":" + String(sec%60).padStart(2,"0"), x, pt+ph+8); }
+  ctx.textAlign = "left"; ctx.fillStyle = muted; ctx.fillText(tt(sr.name) + ", " + tt(sr.unit), pl, 0);
+  const X = t => pl + (t-(now-win))/win*pw, Y = v => pt + ph - Math.min(v, top)/top*ph;
+  if (pts.length >= 2){
+    ctx.beginPath(); pts.forEach((p,i) => i ? ctx.lineTo(X(p[0]),Y(p[sr.idx])) : ctx.moveTo(X(p[0]),Y(p[sr.idx])));
+    ctx.lineTo(X(pts[pts.length-1][0]), pt+ph); ctx.lineTo(X(pts[0][0]), pt+ph); ctx.closePath();
+    const g = ctx.createLinearGradient(0,pt,0,pt+ph); g.addColorStop(0, col+"55"); g.addColorStop(1, col+"05"); ctx.fillStyle = g; ctx.fill();
+    ctx.beginPath(); pts.forEach((p,i) => i ? ctx.lineTo(X(p[0]),Y(p[sr.idx])) : ctx.moveTo(X(p[0]),Y(p[sr.idx])));
+    ctx.strokeStyle = col; ctx.lineWidth = 2; ctx.lineJoin = "round"; ctx.stroke(); ctx.lineWidth = 1;
+    const mn = Math.min(...vals), mx = Math.max(...vals), av = vals.reduce((a,b) => a+b, 0)/vals.length, f = v => +v.toPrecision(3);
+    $("#stats").textContent = `${tt("мин")} ${f(mn)}   ${tt("макс")} ${f(mx)}   ${tt("средн.")} ${f(av)} ${tt(sr.unit)}`;
+  } else { $("#stats").textContent = ""; ctx.fillStyle = muted; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(tt("нет данных"), pl+pw/2, pt+ph/2); }
+  if (hoverX != null && pts.length >= 2 && hoverX >= pl && hoverX <= pl+pw){
+    const t = now - win + (hoverX-pl)/pw*win; let q = pts[0]; for (const p of pts) if (Math.abs(p[0]-t) < Math.abs(q[0]-t)) q = p;
+    const x = X(q[0]), y = Y(q[sr.idx]);
+    ctx.strokeStyle = muted; ctx.setLineDash([3,3]); ctx.beginPath(); ctx.moveTo(x,pt); ctx.lineTo(x,pt+ph); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle = col; ctx.beginPath(); ctx.arc(x,y,4,0,7); ctx.fill();
+    const txt = new Date(q[0]*1000).toLocaleTimeString(lang === "en" ? "en-GB" : "ru-RU") + "   U " + q[1].toFixed(2) + " " + tt("В") + "   I " + q[2].toFixed(3) + " " + tt("А") + "   P " + q[3].toFixed(1) + " " + tt("Вт");
+    const tw = ctx.measureText(txt).width + 16, bx = Math.min(Math.max(x - tw/2, pl), pl+pw-tw);
+    ctx.fillStyle = css("--card2"); ctx.strokeStyle = line; ctx.fillRect(bx, pt, tw, 24); ctx.strokeRect(bx, pt, tw, 24);
+    ctx.fillStyle = css("--text"); ctx.textAlign = "left"; ctx.textBaseline = "middle"; ctx.fillText(txt, bx+8, pt+12);
+  }
+}
+cv.addEventListener("mousemove", e => { hoverX = e.clientX - cv.getBoundingClientRect().left; draw(); });
+cv.addEventListener("mouseleave", () => { hoverX = null; draw(); });
+addEventListener("resize", draw);
+
+// ---------- уведомления ----------
+function toast(msg, level){ const t = document.createElement("div"); t.className = "toast " + (level || "info"); t.textContent = msg;
+  $("#toasts").append(t); setTimeout(() => t.remove(), level === "err" ? 15000 : 8000); }
+
+buildSegs(); applyLang(); connect(); draw();
+</script>
+</body>
+</html>
